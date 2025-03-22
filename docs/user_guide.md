@@ -9,9 +9,10 @@
 5. [Project Management](#project-management)
 6. [Invoice Management](#invoice-management)
 7. [Payroll Management](#payroll-management)
-8. [Reports and Analytics](#reports-and-analytics)
-9. [User Management](#user-management)
-10. [Tips and Best Practices](#tips-and-best-practices)
+8. [Financial Management](#financial-management)
+9. [Reports and Analytics](#reports-and-analytics)
+10. [User Management](#user-management)
+11. [Tips and Best Practices](#tips-and-best-practices)
 
 ## Introduction
 
@@ -180,6 +181,75 @@ To generate payroll reports:
 3. Click "Generate Report" to view the payroll summary
 4. Export the report to PDF or Excel as needed
 
+## Financial Management
+
+The financial management module provides comprehensive tools for managing suppliers, expenses, accounts payable/paid, and generating financial reports.
+
+### Supplier Management
+
+1. Navigate to the "Suppliers" section from the sidebar under Financial Management
+2. Click the "New Supplier" button to add a supplier
+3. Enter the supplier name, contact person, phone, email, and address
+4. Click "Add Supplier" to save the supplier information
+
+### Expense Categories
+
+1. Navigate to the "Expense Categories" section from the sidebar
+2. Click the "New Category" button
+3. Enter the category name and description
+4. Click "Add Category" to create the expense category
+
+### Accounts Payable
+
+1. Navigate to the "Accounts Payable" section from the sidebar
+2. Click the "New Payable" button
+3. Select the supplier and expense category from the dropdown menus
+4. Enter the description, amount, issue date, and due date
+5. Select the payment method and status
+6. Add any notes for reference
+7. Click "Add Payable" to record the account payable
+
+#### Marking Accounts as Paid
+
+1. Find the account payable in the list
+2. Click the "Mark as Paid" button
+3. The system will automatically create an entry in Accounts Paid
+
+### Accounts Paid
+
+1. Navigate to the "Accounts Paid" section from the sidebar
+2. Click the "New Payment" button
+3. Select the supplier and expense category
+4. Enter the description, amount, and payment date
+5. Select the payment method
+6. For check payments, enter the check number and bank name
+7. Upload a receipt if available
+8. Add any notes for reference
+9. Click "Record Payment" to save the payment information
+
+### Monthly Expenses
+
+1. Navigate to the "Monthly Expenses" section from the sidebar
+2. Click the "New Expense" button
+3. Select the expense category
+4. Enter the description, amount, and expense date
+5. Select the payment method
+6. Add any notes for reference
+7. Click "Add Expense" to record the monthly expense
+
+### Financial Reports
+
+1. Navigate to the "Financial Reports" section from the sidebar
+2. Choose from the available report types:
+   - **Accounts Payable Report**: Filter by date range, supplier, category, or status
+   - **Accounts Paid Report**: Filter by date range, supplier, category, or payment method
+   - **Monthly Expenses Report**: Filter by date range, category, or payment method
+   - **Payment Methods Report**: Analyze payment method distribution
+   - **Payment Forecast**: View upcoming payments for cash flow planning
+3. Set the desired filters and click "Generate Report"
+4. View the data visualization charts and detailed tables
+5. Export reports as needed for record-keeping
+
 ## Reports and Analytics
 
 The system provides various reports and analytics to help you understand your financial performance.
@@ -190,6 +260,7 @@ The system provides various reports and analytics to help you understand your fi
 - **Project Profitability**: Analysis of profit margins for each project
 - **Invoice Status**: Summary of paid and unpaid invoices
 - **Employee Hours**: Breakdown of hours worked by each employee
+- **Financial Reports**: Comprehensive financial analytics including accounts payable/paid, expenses by category, payment methods, and payment forecasts
 
 ### Generating Reports
 

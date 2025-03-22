@@ -33,9 +33,13 @@ This financial management system is designed specifically for Mauricio Paint and
 
 ### Financial Management
 - Invoice generation with PDF export
-- Payment tracking
-- Financial dashboard with key metrics
-- Historical financial data
+- Comprehensive supplier management
+- Expense categorization and tracking
+- Accounts payable and accounts paid management
+- Monthly expense tracking with payment method details
+- Financial reports with data visualization
+- Payment forecast and cash flow analysis
+- Receipt upload and storage for payments
 
 ## Technology Stack
 

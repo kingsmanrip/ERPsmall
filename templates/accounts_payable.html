@@ -1,0 +1,157 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Accounts Payable</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Add New Account Payable</h5>
+        </div>
+        <div class="card-body">
+            <form action="/accounts-payable" method="post">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="supplier_id" class="form-label">Supplier*</label>
+                        <select class="form-select" id="supplier_id" name="supplier_id" required>
+                            <option value="">Select Supplier</option>
+                            {% for supplier in suppliers %}
+                            <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="category_id" class="form-label">Category*</label>
+                        <select class="form-select" id="category_id" name="category_id" required>
+                            <option value="">Select Category</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="description" class="form-label">Description*</label>
+                        <input type="text" class="form-control" id="description" name="description" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="amount" class="form-label">Amount*</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="issue_date" class="form-label">Issue Date*</label>
+                        <input type="date" class="form-control" id="issue_date" name="issue_date" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="due_date" class="form-label">Due Date*</label>
+                        <input type="date" class="form-control" id="due_date" name="due_date" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="payment_method" class="form-label">Payment Method</label>
+                        <select class="form-select" id="payment_method" name="payment_method">
+                            <option value="">Select Payment Method</option>
+                            {% for method in payment_methods %}
+                            <option value="{{ method }}">{{ method }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="status" class="form-label">Status*</label>
+                        <select class="form-select" id="status" name="status" required>
+                            {% for status in statuses %}
+                            <option value="{{ status }}">{{ status }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="1"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Account Payable</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Accounts Payable List</h5>
+        </div>
+        <div class="card-body">
+            {% if accounts_payable %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Supplier</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Issue Date</th>
+                            <th>Due Date</th>
+                            <th>Payment Method</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ap in accounts_payable %}
+                        <tr class="{% if ap.status == 'Pending' and ap.due_date < now().date() %}table-danger{% elif ap.status == 'Pending' and (ap.due_date - now().date()).days <= 7 %}table-warning{% endif %}">
+                            <td>{{ ap.supplier.name }}</td>
+                            <td>{{ ap.category.name }}</td>
+                            <td>{{ ap.description }}</td>
+                            <td>${{ "%.2f"|format(ap.amount) }}</td>
+                            <td>{{ ap.issue_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ ap.due_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ ap.payment_method or '-' }}</td>
+                            <td>
+                                <span class="badge {% if ap.status == 'Pending' %}bg-warning{% else %}bg-success{% endif %}">
+                                    {{ ap.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if ap.status == 'Pending' %}
+                                <form action="/accounts-payable/{{ ap.id }}/mark-as-paid" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-success">Mark as Paid</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No accounts payable found. Add your first account payable using the form above.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set default dates
+        const today = new Date();
+        const issueDate = document.getElementById('issue_date');
+        const dueDate = document.getElementById('due_date');
+        
+        if (issueDate) {
+            issueDate.valueAsDate = today;
+        }
+        
+        if (dueDate) {
+            const thirtyDaysLater = new Date();
+            thirtyDaysLater.setDate(today.getDate() + 30);
+            dueDate.valueAsDate = thirtyDaysLater;
+        }
+    });
+</script>
+{% endblock %}

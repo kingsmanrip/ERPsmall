@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from models import User
 from database import get_db
 
-SECRET_KEY = "your-secret-key-keep-this-safe"
+SECRET_KEY = "mauricio-paint-drywall-secure-key-2025-financial-system"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 120  # Increased to 2 hours
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -31,8 +31,10 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=60)  # Default to 60 minutes
     to_encode.update({"exp": expire})
+    # Add issued at time for better security
+    to_encode.update({"iat": datetime.now(timezone.utc)})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 

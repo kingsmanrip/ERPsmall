@@ -1,0 +1,177 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Accounts Paid</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Add New Account Paid</h5>
+        </div>
+        <div class="card-body">
+            <form action="/accounts-paid" method="post" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="supplier_id" class="form-label">Supplier*</label>
+                        <select class="form-select" id="supplier_id" name="supplier_id" required>
+                            <option value="">Select Supplier</option>
+                            {% for supplier in suppliers %}
+                            <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="category_id" class="form-label">Category*</label>
+                        <select class="form-select" id="category_id" name="category_id" required>
+                            <option value="">Select Category</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="description" class="form-label">Description*</label>
+                        <input type="text" class="form-control" id="description" name="description" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="amount" class="form-label">Amount*</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="payment_date" class="form-label">Payment Date*</label>
+                        <input type="date" class="form-control" id="payment_date" name="payment_date" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="payment_method" class="form-label">Payment Method*</label>
+                        <select class="form-select" id="payment_method" name="payment_method" required onchange="togglePaymentFields()">
+                            <option value="">Select Payment Method</option>
+                            {% for method in payment_methods %}
+                            <option value="{{ method }}">{{ method }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3" id="check_number_container" style="display: none;">
+                        <label for="check_number" class="form-label">Check Number</label>
+                        <input type="text" class="form-control" id="check_number" name="check_number">
+                    </div>
+                    <div class="col-md-4 mb-3" id="bank_name_container" style="display: none;">
+                        <label for="bank_name" class="form-label">Bank Name</label>
+                        <input type="text" class="form-control" id="bank_name" name="bank_name">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="receipt" class="form-label">Receipt Upload</label>
+                        <input type="file" class="form-control" id="receipt" name="receipt">
+                        <div class="form-text">Upload a receipt image or PDF (optional)</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="1"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Account Paid</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Accounts Paid List</h5>
+        </div>
+        <div class="card-body">
+            {% if accounts_paid %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Supplier</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Payment Date</th>
+                            <th>Payment Method</th>
+                            <th>Check/Bank Details</th>
+                            <th>Receipt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ap in accounts_paid %}
+                        <tr>
+                            <td>{{ ap.supplier.name }}</td>
+                            <td>{{ ap.category.name }}</td>
+                            <td>{{ ap.description }}</td>
+                            <td>${{ "%.2f"|format(ap.amount) }}</td>
+                            <td>{{ ap.payment_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ ap.payment_method }}</td>
+                            <td>
+                                {% if ap.payment_method == 'Check' %}
+                                Check #{{ ap.check_number or 'N/A' }}<br>
+                                Bank: {{ ap.bank_name or 'N/A' }}
+                                {% elif ap.payment_method == 'Transfer' %}
+                                Bank: {{ ap.bank_name or 'N/A' }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if ap.receipt_file %}
+                                <a href="/uploads/{{ ap.receipt_file }}" target="_blank" class="btn btn-sm btn-info">View Receipt</a>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No accounts paid found. Add your first account paid using the form above.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set default date to today
+        const today = new Date();
+        const paymentDate = document.getElementById('payment_date');
+        
+        if (paymentDate) {
+            paymentDate.valueAsDate = today;
+        }
+        
+        // Initialize payment fields visibility
+        togglePaymentFields();
+    });
+    
+    function togglePaymentFields() {
+        const paymentMethod = document.getElementById('payment_method').value;
+        const checkNumberContainer = document.getElementById('check_number_container');
+        const bankNameContainer = document.getElementById('bank_name_container');
+        
+        // Hide all containers first
+        checkNumberContainer.style.display = 'none';
+        bankNameContainer.style.display = 'none';
+        
+        // Show relevant containers based on payment method
+        if (paymentMethod === 'Check') {
+            checkNumberContainer.style.display = 'block';
+            bankNameContainer.style.display = 'block';
+        } else if (paymentMethod === 'Transfer') {
+            bankNameContainer.style.display = 'block';
+        }
+    }
+</script>
+{% endblock %}

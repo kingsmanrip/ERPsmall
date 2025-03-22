@@ -1,0 +1,111 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Monthly Expenses</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Add New Monthly Expense</h5>
+        </div>
+        <div class="card-body">
+            <form action="/monthly-expenses" method="post">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="category_id" class="form-label">Category*</label>
+                        <select class="form-select" id="category_id" name="category_id" required>
+                            <option value="">Select Category</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="description" class="form-label">Description*</label>
+                        <input type="text" class="form-control" id="description" name="description" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="amount" class="form-label">Amount*</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="expense_date" class="form-label">Expense Date*</label>
+                        <input type="date" class="form-control" id="expense_date" name="expense_date" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="payment_method" class="form-label">Payment Method*</label>
+                        <select class="form-select" id="payment_method" name="payment_method" required>
+                            <option value="">Select Payment Method</option>
+                            {% for method in payment_methods %}
+                            <option value="{{ method }}">{{ method }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Monthly Expense</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Monthly Expenses List</h5>
+        </div>
+        <div class="card-body">
+            {% if monthly_expenses %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Expense Date</th>
+                            <th>Payment Method</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in monthly_expenses %}
+                        <tr>
+                            <td>{{ expense.category.name }}</td>
+                            <td>{{ expense.description }}</td>
+                            <td>${{ "%.2f"|format(expense.amount) }}</td>
+                            <td>{{ expense.expense_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ expense.payment_method }}</td>
+                            <td>{{ expense.notes or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No monthly expenses found. Add your first monthly expense using the form above.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set default date to today
+        const today = new Date();
+        const expenseDate = document.getElementById('expense_date');
+        
+        if (expenseDate) {
+            expenseDate.valueAsDate = today;
+        }
+    });
+</script>
+{% endblock %}

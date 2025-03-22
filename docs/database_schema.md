@@ -41,6 +41,38 @@ The Mauricio Paint and Dry Wall Financial Management System uses a relational da
 │ total_amount  │
 │ paid          │
 └───────────────┘
+
+┌───────────────┐       ┌───────────────┐       ┌───────────────┐
+│   Supplier    │       │ExpenseCategory│       │AccountsPayable│
+├───────────────┤       ├───────────────┤       ├───────────────┤
+│ id            │       │ id            │       │ id            │
+│ name          │◄──────┤ supplier_id   │◄──────┤ supplier_id   │
+│ contact_person│       │ name          │       │ category_id   │
+│ phone         │       │ description   │       │ description   │
+│ email         │       └───────────────┘       │ amount        │
+│ address       │               ▲               │ issue_date    │
+└───────────────┘               │               │ due_date      │
+        ▲                       │               │ payment_method│
+        │                       │               │ status        │
+        │                       │               │ notes         │
+        │                       │               └───────────────┘
+        │                       │
+        │                       │
+┌───────────────┐       ┌───────────────┐
+│ AccountsPaid  │       │MonthlyExpense │
+├───────────────┤       ├───────────────┤
+│ id            │       │ id            │
+│ supplier_id   │       │ category_id   │
+│ category_id   │       │ description   │
+│ description   │       │ amount        │
+│ amount        │       │ expense_date  │
+│ payment_date  │       │ payment_method│
+│ payment_method│       │ notes         │
+│ check_number  │       └───────────────┘
+│ bank_name     │
+│ receipt_file  │
+│ notes         │
+└───────────────┘
 ```
 
 ## Table Definitions
@@ -228,6 +260,188 @@ The following indexes are created to optimize query performance:
    - Unique index on `invoice_number`
    - Index on `date` for date-based queries
    - Index on `paid` for filtering paid/unpaid invoices
+   
+7. **Supplier Indexes**:
+   - Primary key index on `id`
+   - Index on `name` for search optimization
+   
+8. **ExpenseCategory Indexes**:
+   - Primary key index on `id`
+   - Unique index on `name` for fast category lookups
+   
+9. **AccountsPayable Indexes**:
+   - Primary key index on `id`
+   - Index on `supplier_id` for foreign key lookups
+   - Index on `category_id` for foreign key lookups
+   - Index on `due_date` for date-based queries
+   - Index on `status` for status-based filtering
+   
+10. **AccountsPaid Indexes**:
+    - Primary key index on `id`
+    - Index on `supplier_id` for foreign key lookups
+    - Index on `category_id` for foreign key lookups
+    - Index on `payment_date` for date-based queries
+    - Index on `payment_method` for payment method filtering
+   
+11. **MonthlyExpense Indexes**:
+    - Primary key index on `id`
+    - Index on `category_id` for foreign key lookups
+    - Index on `expense_date` for date-based queries
+    - Index on `payment_method` for payment method filtering
+
+### Supplier
+
+The `Supplier` table stores information about vendors and service providers.
+
+| Column         | Type         | Constraints       | Description                           |
+|----------------|--------------|-------------------|---------------------------------------|
+| id             | Integer      | PK, Auto-increment| Unique identifier for the supplier    |
+| name           | String(100)  | Not null          | Supplier's company name              |
+| contact_person | String(100)  | Not null          | Name of primary contact              |
+| phone          | String(20)   | Not null          | Contact phone number                 |
+| email          | String(100)  | Not null          | Contact email address                |
+| address        | String(200)  | Not null          | Physical address                     |
+
+```python
+class Supplier(Base):
+    __tablename__ = "suppliers"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    contact_person = Column(String(100), nullable=False)
+    phone = Column(String(20), nullable=False)
+    email = Column(String(100), nullable=False)
+    address = Column(String(200), nullable=False)
+    
+    accounts_payable = relationship("AccountsPayable", back_populates="supplier")
+    accounts_paid = relationship("AccountsPaid", back_populates="supplier")
+```
+
+### ExpenseCategory
+
+The `ExpenseCategory` table defines categories for organizing expenses.
+
+| Column      | Type         | Constraints       | Description                           |
+|-------------|--------------|-------------------|---------------------------------------|
+| id          | Integer      | PK, Auto-increment| Unique identifier for the category    |
+| name        | String(50)   | Not null, Unique  | Category name                        |
+| description | String(200)  | Not null          | Description of the category          |
+
+```python
+class ExpenseCategory(Base):
+    __tablename__ = "expense_categories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(50), nullable=False, unique=True)
+    description = Column(String(200), nullable=False)
+    
+    accounts_payable = relationship("AccountsPayable", back_populates="category")
+    accounts_paid = relationship("AccountsPaid", back_populates="category")
+    monthly_expenses = relationship("MonthlyExpense", back_populates="category")
+```
+
+### AccountsPayable
+
+The `AccountsPayable` table tracks pending bills and upcoming payments.
+
+| Column         | Type         | Constraints       | Description                           |
+|----------------|--------------|-------------------|---------------------------------------|
+| id             | Integer      | PK, Auto-increment| Unique identifier for the payable    |
+| supplier_id    | Integer      | FK, Not null      | Reference to the supplier            |
+| category_id    | Integer      | FK, Not null      | Reference to the expense category    |
+| description    | String(200)  | Not null          | Description of the payable          |
+| amount         | Numeric(10,2)| Not null          | Amount due                          |
+| issue_date     | Date         | Not null          | Date the bill was issued            |
+| due_date       | Date         | Not null          | Date the payment is due             |
+| payment_method | String(50)   | Not null          | Method of payment                   |
+| status         | String(20)   | Not null          | Status (pending, paid, overdue)     |
+| notes          | String(500)  | Nullable          | Additional notes                    |
+
+```python
+class AccountsPayable(Base):
+    __tablename__ = "accounts_payable"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False)
+    category_id = Column(Integer, ForeignKey("expense_categories.id"), nullable=False)
+    description = Column(String(200), nullable=False)
+    amount = Column(Numeric(10, 2), nullable=False)
+    issue_date = Column(Date, nullable=False)
+    due_date = Column(Date, nullable=False)
+    payment_method = Column(String(50), nullable=False)
+    status = Column(String(20), nullable=False)
+    notes = Column(String(500))
+    
+    supplier = relationship("Supplier", back_populates="accounts_payable")
+    category = relationship("ExpenseCategory", back_populates="accounts_payable")
+```
+
+### AccountsPaid
+
+The `AccountsPaid` table records completed payments with receipt uploads.
+
+| Column         | Type         | Constraints       | Description                           |
+|----------------|--------------|-------------------|---------------------------------------|
+| id             | Integer      | PK, Auto-increment| Unique identifier for the payment    |
+| supplier_id    | Integer      | FK, Not null      | Reference to the supplier            |
+| category_id    | Integer      | FK, Not null      | Reference to the expense category    |
+| description    | String(200)  | Not null          | Description of the payment          |
+| amount         | Numeric(10,2)| Not null          | Amount paid                         |
+| payment_date   | Date         | Not null          | Date the payment was made           |
+| payment_method | String(50)   | Not null          | Method of payment                   |
+| check_number   | String(50)   | Nullable          | Check number if paid by check       |
+| bank_name      | String(100)  | Nullable          | Bank name if paid by check          |
+| receipt_file   | String(200)  | Nullable          | Path to uploaded receipt file       |
+| notes          | String(500)  | Nullable          | Additional notes                    |
+
+```python
+class AccountsPaid(Base):
+    __tablename__ = "accounts_paid"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False)
+    category_id = Column(Integer, ForeignKey("expense_categories.id"), nullable=False)
+    description = Column(String(200), nullable=False)
+    amount = Column(Numeric(10, 2), nullable=False)
+    payment_date = Column(Date, nullable=False)
+    payment_method = Column(String(50), nullable=False)
+    check_number = Column(String(50))
+    bank_name = Column(String(100))
+    receipt_file = Column(String(200))
+    notes = Column(String(500))
+    
+    supplier = relationship("Supplier", back_populates="accounts_paid")
+    category = relationship("ExpenseCategory", back_populates="accounts_paid")
+```
+
+### MonthlyExpense
+
+The `MonthlyExpense` table tracks recurring monthly expenses.
+
+| Column         | Type         | Constraints       | Description                           |
+|----------------|--------------|-------------------|---------------------------------------|
+| id             | Integer      | PK, Auto-increment| Unique identifier for the expense    |
+| category_id    | Integer      | FK, Not null      | Reference to the expense category    |
+| description    | String(200)  | Not null          | Description of the expense          |
+| amount         | Numeric(10,2)| Not null          | Amount of the expense               |
+| expense_date   | Date         | Not null          | Date of the expense                 |
+| payment_method | String(50)   | Not null          | Method of payment                   |
+| notes          | String(500)  | Nullable          | Additional notes                    |
+
+```python
+class MonthlyExpense(Base):
+    __tablename__ = "monthly_expenses"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    category_id = Column(Integer, ForeignKey("expense_categories.id"), nullable=False)
+    description = Column(String(200), nullable=False)
+    amount = Column(Numeric(10, 2), nullable=False)
+    expense_date = Column(Date, nullable=False)
+    payment_method = Column(String(50), nullable=False)
+    notes = Column(String(500))
+    
+    category = relationship("ExpenseCategory", back_populates="monthly_expenses")
+```
 
 ## Database Constraints
 
@@ -240,10 +454,16 @@ The following constraints are enforced to maintain data integrity:
    - `DailyEntry.employee_id` references `Employee.id`
    - `Payroll.employee_id` references `Employee.id`
    - `Invoice.project_id` references `Project.id`
+   - `AccountsPayable.supplier_id` references `Supplier.id`
+   - `AccountsPayable.category_id` references `ExpenseCategory.id`
+   - `AccountsPaid.supplier_id` references `Supplier.id`
+   - `AccountsPaid.category_id` references `ExpenseCategory.id`
+   - `MonthlyExpense.category_id` references `ExpenseCategory.id`
 
 3. **Unique Constraints**:
    - `User.username` must be unique
    - `Invoice.invoice_number` must be unique
+   - `ExpenseCategory.name` must be unique
 
 4. **Not Null Constraints**:
    - Critical fields in all tables have not null constraints

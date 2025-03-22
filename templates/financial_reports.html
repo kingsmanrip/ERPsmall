@@ -1,0 +1,717 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Financial Reports</h2>
+    
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="list-group">
+                <a href="#accounts-payable-report" class="list-group-item list-group-item-action active" data-bs-toggle="list">Accounts Payable Report</a>
+                <a href="#accounts-paid-report" class="list-group-item list-group-item-action" data-bs-toggle="list">Accounts Paid Report</a>
+                <a href="#monthly-expenses-report" class="list-group-item list-group-item-action" data-bs-toggle="list">Monthly Expenses Report</a>
+                <a href="#payment-methods-report" class="list-group-item list-group-item-action" data-bs-toggle="list">Payment Method Report</a>
+                <a href="#payment-forecast-report" class="list-group-item list-group-item-action" data-bs-toggle="list">Payment Forecast Report</a>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="tab-content">
+                <!-- Accounts Payable Report -->
+                <div class="tab-pane fade show active" id="accounts-payable-report">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Accounts Payable Report</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="ap-start-date" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" id="ap-start-date">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="ap-end-date" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="ap-end-date">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="ap-status" class="form-label">Status</label>
+                                    <select class="form-select" id="ap-status">
+                                        <option value="">All</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Paid">Paid</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="loadAccountsPayableReport()">Generate Report</button>
+                            
+                            <div class="mt-4" id="ap-report-results">
+                                <div class="alert alert-info">
+                                    Select filters and click "Generate Report" to view accounts payable data.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Accounts Paid Report -->
+                <div class="tab-pane fade" id="accounts-paid-report">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Accounts Paid Report</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="paid-start-date" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" id="paid-start-date">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="paid-end-date" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="paid-end-date">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="paid-payment-method" class="form-label">Payment Method</label>
+                                    <select class="form-select" id="paid-payment-method">
+                                        <option value="">All</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Check">Check</option>
+                                        <option value="Transfer">Transfer</option>
+                                        <option value="Card">Card</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="loadAccountsPaidReport()">Generate Report</button>
+                            
+                            <div class="mt-4" id="paid-report-results">
+                                <div class="alert alert-info">
+                                    Select filters and click "Generate Report" to view accounts paid data.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Monthly Expenses Report -->
+                <div class="tab-pane fade" id="monthly-expenses-report">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Monthly Expenses Report</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="exp-start-date" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" id="exp-start-date">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="exp-end-date" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="exp-end-date">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="exp-category" class="form-label">Category</label>
+                                    <select class="form-select" id="exp-category">
+                                        <option value="">All Categories</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="loadMonthlyExpensesReport()">Generate Report</button>
+                            
+                            <div class="mt-4" id="exp-report-results">
+                                <div class="alert alert-info">
+                                    Select filters and click "Generate Report" to view monthly expenses data.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment Methods Report -->
+                <div class="tab-pane fade" id="payment-methods-report">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Payment Methods Report</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="pm-start-date" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" id="pm-start-date">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="pm-end-date" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="pm-end-date">
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="loadPaymentMethodsReport()">Generate Report</button>
+                            
+                            <div class="mt-4" id="pm-report-results">
+                                <div class="alert alert-info">
+                                    Select date range and click "Generate Report" to view payment methods data.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment Forecast Report -->
+                <div class="tab-pane fade" id="payment-forecast-report">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Payment Forecast Report</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="forecast-days" class="form-label">Forecast Period (Days)</label>
+                                    <input type="number" class="form-control" id="forecast-days" value="30" min="1" max="365">
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="loadPaymentForecastReport()">Generate Report</button>
+                            
+                            <div class="mt-4" id="forecast-report-results">
+                                <div class="alert alert-info">
+                                    Set forecast period and click "Generate Report" to view upcoming payments.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Load categories for the expense report dropdown
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/reports/categories')
+            .then(response => response.json())
+            .then(data => {
+                const categorySelect = document.getElementById('exp-category');
+                data.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    categorySelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error loading categories:', error));
+    });
+
+    // Accounts Payable Report
+    function loadAccountsPayableReport() {
+        const startDate = document.getElementById('ap-start-date').value;
+        const endDate = document.getElementById('ap-end-date').value;
+        const status = document.getElementById('ap-status').value;
+        
+        let url = '/api/reports/accounts-payable?';
+        if (startDate) url += `start_date=${startDate}&`;
+        if (endDate) url += `end_date=${endDate}&`;
+        if (status) url += `status=${status}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('ap-report-results');
+                
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = '<div class="alert alert-warning">No data found for the selected filters.</div>';
+                    return;
+                }
+                
+                let total = 0;
+                let tableHtml = `
+                    <h4 class="mt-3">Results (${data.length} items)</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Supplier</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.forEach(item => {
+                    total += item.amount;
+                    tableHtml += `
+                        <tr>
+                            <td>${item.supplier}</td>
+                            <td>${item.description}</td>
+                            <td>${item.category}</td>
+                            <td>$${item.amount.toFixed(2)}</td>
+                            <td>${item.due_date}</td>
+                            <td>
+                                <span class="badge ${item.status === 'Pending' ? 'bg-warning' : 'bg-success'}">
+                                    ${item.status}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tableHtml += `
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3">Total</th>
+                                    <th>$${total.toFixed(2)}</th>
+                                    <th colspan="2"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML = tableHtml;
+            })
+            .catch(error => {
+                console.error('Error loading accounts payable report:', error);
+                document.getElementById('ap-report-results').innerHTML = 
+                    '<div class="alert alert-danger">Error loading report data.</div>';
+            });
+    }
+
+    // Accounts Paid Report
+    function loadAccountsPaidReport() {
+        const startDate = document.getElementById('paid-start-date').value;
+        const endDate = document.getElementById('paid-end-date').value;
+        const paymentMethod = document.getElementById('paid-payment-method').value;
+        
+        let url = '/api/reports/accounts-paid?';
+        if (startDate) url += `start_date=${startDate}&`;
+        if (endDate) url += `end_date=${endDate}&`;
+        if (paymentMethod) url += `payment_method=${paymentMethod}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('paid-report-results');
+                
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = '<div class="alert alert-warning">No data found for the selected filters.</div>';
+                    return;
+                }
+                
+                let total = 0;
+                let tableHtml = `
+                    <h4 class="mt-3">Results (${data.length} items)</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Supplier</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Payment Date</th>
+                                    <th>Payment Method</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.forEach(item => {
+                    total += item.amount;
+                    tableHtml += `
+                        <tr>
+                            <td>${item.supplier}</td>
+                            <td>${item.description}</td>
+                            <td>${item.category}</td>
+                            <td>$${item.amount.toFixed(2)}</td>
+                            <td>${item.payment_date}</td>
+                            <td>${item.payment_method}</td>
+                        </tr>
+                    `;
+                });
+                
+                tableHtml += `
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3">Total</th>
+                                    <th>$${total.toFixed(2)}</th>
+                                    <th colspan="2"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML = tableHtml;
+            })
+            .catch(error => {
+                console.error('Error loading accounts paid report:', error);
+                document.getElementById('paid-report-results').innerHTML = 
+                    '<div class="alert alert-danger">Error loading report data.</div>';
+            });
+    }
+
+    // Monthly Expenses Report
+    function loadMonthlyExpensesReport() {
+        const startDate = document.getElementById('exp-start-date').value;
+        const endDate = document.getElementById('exp-end-date').value;
+        const categoryId = document.getElementById('exp-category').value;
+        
+        let url = '/api/reports/monthly-expenses?';
+        if (startDate) url += `start_date=${startDate}&`;
+        if (endDate) url += `end_date=${endDate}&`;
+        if (categoryId) url += `category_id=${categoryId}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('exp-report-results');
+                
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = '<div class="alert alert-warning">No data found for the selected filters.</div>';
+                    return;
+                }
+                
+                // Group by category
+                const categories = {};
+                let total = 0;
+                
+                data.forEach(item => {
+                    if (!categories[item.category]) {
+                        categories[item.category] = 0;
+                    }
+                    categories[item.category] += item.amount;
+                    total += item.amount;
+                });
+                
+                // Create chart data
+                const categoryNames = Object.keys(categories);
+                const categoryValues = Object.values(categories);
+                
+                // Create detailed table
+                let tableHtml = `
+                    <h4 class="mt-3">Results (${data.length} items)</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <canvas id="expensesByCategoryChart" width="400" height="300"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Total Amount</th>
+                                            <th>Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                `;
+                
+                categoryNames.forEach((category, index) => {
+                    const percentage = ((categoryValues[index] / total) * 100).toFixed(2);
+                    tableHtml += `
+                        <tr>
+                            <td>${category}</td>
+                            <td>$${categoryValues[index].toFixed(2)}</td>
+                            <td>${percentage}%</td>
+                        </tr>
+                    `;
+                });
+                
+                tableHtml += `
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Total</th>
+                                            <th>$${total.toFixed(2)}</th>
+                                            <th>100%</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">Detailed Expenses</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Payment Method</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.forEach(item => {
+                    tableHtml += `
+                        <tr>
+                            <td>${item.description}</td>
+                            <td>${item.category}</td>
+                            <td>$${item.amount.toFixed(2)}</td>
+                            <td>${item.expense_date}</td>
+                            <td>${item.payment_method}</td>
+                        </tr>
+                    `;
+                });
+                
+                tableHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML = tableHtml;
+                
+                // Create pie chart
+                const ctx = document.getElementById('expensesByCategoryChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: categoryNames,
+                        datasets: [{
+                            data: categoryValues,
+                            backgroundColor: [
+                                '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                                '#5a5c69', '#858796', '#6610f2', '#fd7e14', '#20c9a6'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'right'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Expenses by Category'
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading monthly expenses report:', error);
+                document.getElementById('exp-report-results').innerHTML = 
+                    '<div class="alert alert-danger">Error loading report data.</div>';
+            });
+    }
+
+    // Payment Methods Report
+    function loadPaymentMethodsReport() {
+        const startDate = document.getElementById('pm-start-date').value;
+        const endDate = document.getElementById('pm-end-date').value;
+        
+        let url = '/api/reports/payment-methods?';
+        if (startDate) url += `start_date=${startDate}&`;
+        if (endDate) url += `end_date=${endDate}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('pm-report-results');
+                
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = '<div class="alert alert-warning">No data found for the selected filters.</div>';
+                    return;
+                }
+                
+                // Create chart data
+                const methods = data.map(item => item.payment_method);
+                const accountsPaidValues = data.map(item => item.accounts_paid_total);
+                const expensesValues = data.map(item => item.expenses_total);
+                
+                let totalPaid = 0;
+                data.forEach(item => {
+                    totalPaid += item.combined_total;
+                });
+                
+                let tableHtml = `
+                    <h4 class="mt-3">Payment Methods Summary</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <canvas id="paymentMethodsChart" width="400" height="300"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Payment Method</th>
+                                            <th>Accounts Paid</th>
+                                            <th>Expenses</th>
+                                            <th>Total</th>
+                                            <th>Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                `;
+                
+                data.forEach(item => {
+                    const percentage = ((item.combined_total / totalPaid) * 100).toFixed(2);
+                    tableHtml += `
+                        <tr>
+                            <td>${item.payment_method}</td>
+                            <td>$${item.accounts_paid_total.toFixed(2)}</td>
+                            <td>$${item.expenses_total.toFixed(2)}</td>
+                            <td>$${item.combined_total.toFixed(2)}</td>
+                            <td>${percentage}%</td>
+                        </tr>
+                    `;
+                });
+                
+                tableHtml += `
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Total</th>
+                                            <th colspan="2"></th>
+                                            <th>$${totalPaid.toFixed(2)}</th>
+                                            <th>100%</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML = tableHtml;
+                
+                // Create bar chart
+                const ctx = document.getElementById('paymentMethodsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: methods,
+                        datasets: [
+                            {
+                                label: 'Accounts Paid',
+                                data: accountsPaidValues,
+                                backgroundColor: '#4e73df'
+                            },
+                            {
+                                label: 'Expenses',
+                                data: expensesValues,
+                                backgroundColor: '#1cc88a'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                stacked: false
+                            },
+                            y: {
+                                stacked: false,
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Payment Methods Distribution'
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading payment methods report:', error);
+                document.getElementById('pm-report-results').innerHTML = 
+                    '<div class="alert alert-danger">Error loading report data.</div>';
+            });
+    }
+
+    // Payment Forecast Report
+    function loadPaymentForecastReport() {
+        const days = document.getElementById('forecast-days').value;
+        
+        fetch(`/api/reports/payment-forecast?days=${days}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('forecast-report-results');
+                
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = '<div class="alert alert-warning">No upcoming payments found for the next ' + days + ' days.</div>';
+                    return;
+                }
+                
+                let total = 0;
+                data.forEach(item => {
+                    total += item.amount;
+                });
+                
+                let tableHtml = `
+                    <h4 class="mt-3">Payment Forecast for Next ${days} Days</h4>
+                    <div class="alert alert-info">
+                        <strong>Total upcoming payments: $${total.toFixed(2)}</strong>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Supplier</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Due Date</th>
+                                    <th>Days Until Due</th>
+                                    <th>Alert Level</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.forEach(item => {
+                    let alertClass = '';
+                    if (item.alert_level === 'high') {
+                        alertClass = 'bg-danger';
+                    } else if (item.alert_level === 'medium') {
+                        alertClass = 'bg-warning';
+                    } else {
+                        alertClass = 'bg-info';
+                    }
+                    
+                    tableHtml += `
+                        <tr>
+                            <td>${item.supplier}</td>
+                            <td>${item.description}</td>
+                            <td>$${item.amount.toFixed(2)}</td>
+                            <td>${item.due_date}</td>
+                            <td>${item.days_until_due}</td>
+                            <td><span class="badge ${alertClass}">${item.alert_level}</span></td>
+                        </tr>
+                    `;
+                });
+                
+                tableHtml += `
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="2">Total</th>
+                                    <th>$${total.toFixed(2)}</th>
+                                    <th colspan="3"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML = tableHtml;
+            })
+            .catch(error => {
+                console.error('Error loading payment forecast report:', error);
+                document.getElementById('forecast-report-results').innerHTML = 
+                    '<div class="alert alert-danger">Error loading forecast data.</div>';
+            });
+    }
+</script>
+{% endblock %}
