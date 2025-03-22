@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - {{ company_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+        .company-name {
+            color: #0d6efd;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-container">
+            <h1 class="company-name text-center">{{ company_name }}</h1>
+            <h4 class="text-center mb-4">Financial Management System</h4>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+                <div id="loginError" class="alert alert-danger mt-3" style="display: none;"></div>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('username', document.getElementById('username').value);
+            formData.append('password', document.getElementById('password').value);
+            
+            try {
+                const response = await fetch('/token', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    // On successful login, simply redirect to dashboard
+                    // The cookie will be automatically sent with the request
+                    window.location.href = '/dashboard';
+                } else {
+                    const data = await response.json();
+                    const errorDiv = document.getElementById('loginError');
+                    errorDiv.textContent = data.detail || 'Login failed. Please check your credentials.';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                const errorDiv = document.getElementById('loginError');
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

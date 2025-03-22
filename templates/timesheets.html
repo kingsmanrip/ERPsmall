@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Timesheets - Mauricio Paint and Dry Wall</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #212529;
+            color: white;
+        }
+        .sidebar a {
+            color: #adb5bd;
+            text-decoration: none;
+            display: block;
+            padding: 10px 15px;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar .nav-item {
+            margin-bottom: 5px;
+        }
+        .sidebar i {
+            margin-right: 10px;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .timesheet-container {
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        .success-message {
+            display: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 p-0 sidebar">
+                <div class="p-3">
+                    <h4 class="text-center mb-4">Mauricio Paint and Dry Wall</h4>
+                    <hr>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a href="/dashboard">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/timesheets" class="active">
+                                <i class="bi bi-calendar-week"></i> Timesheets
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/payroll">
+                                <i class="bi bi-cash-stack"></i> Payroll
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/projects">
+                                <i class="bi bi-briefcase"></i> Projects
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/invoices">
+                                <i class="bi bi-receipt"></i> Invoices
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>Weekly Timesheet Entry</h1>
+                    <div>
+                        <button class="btn btn-outline-secondary btn-sm" id="logoutBtn">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    Entering timesheets for the week of <strong>{{ week_start.strftime('%b %d, %Y') }}</strong> to <strong>{{ friday.strftime('%b %d, %Y') }}</strong>
+                </div>
+                
+                {% for employee in employees %}
+                <div class="timesheet-container">
+                    <h3>{{ employee.name }}</h3>
+                    <p>Hourly Rate: ${{ employee.hourly_rate }}</p>
+                    
+                    <form action="/daily-entries" method="post" class="timesheet-form">
+                        <input type="hidden" name="employee_id" value="{{ employee.id }}">
+                        
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Date</th>
+                                    <th>Entry Time</th>
+                                    <th>Exit Time</th>
+                                    <th>Lunch Duration (min)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in range(5) %}
+                                    {% set day = week_start + timedelta(days=i) %}
+                                    <tr>
+                                        <td>{{ day.strftime('%A') }}</td>
+                                        <td>
+                                            <input type="date" name="date" value="{{ day.strftime('%Y-%m-%d') }}" readonly class="form-control">
+                                        </td>
+                                        <td>
+                                            <input type="time" name="entry_time" class="form-control" required>
+                                        </td>
+                                        <td>
+                                            <input type="time" name="exit_time" class="form-control" required>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="lunch_duration" min="0" value="30" class="form-control" required>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Timesheet
+                        </button>
+                        
+                        <div class="alert alert-success success-message">
+                            Timesheet saved successfully!
+                        </div>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Handle logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        });
+        
+        // Add token to all forms
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/';
+                return;
+            }
+            
+            // Add event listeners to all timesheet forms
+            document.querySelectorAll('.timesheet-form').forEach(form => {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(form);
+                    
+                    try {
+                        const response = await fetch('/daily-entries', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const successMessage = form.querySelector('.success-message');
+                            successMessage.style.display = 'block';
+                            
+                            // Hide success message after 3 seconds
+                            setTimeout(() => {
+                                successMessage.style.display = 'none';
+                            }, 3000);
+                        } else {
+                            alert('Error saving timesheet. Please try again.');
+                        }
+                    } catch (error) {
+                        alert('An error occurred. Please try again.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payroll - Mauricio Paint and Dry Wall</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #212529;
+            color: white;
+        }
+        .sidebar a {
+            color: #adb5bd;
+            text-decoration: none;
+            display: block;
+            padding: 10px 15px;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar .nav-item {
+            margin-bottom: 5px;
+        }
+        .sidebar i {
+            margin-right: 10px;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .payroll-container {
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        .payment-method-cash {
+            color: #198754;
+            font-weight: bold;
+        }
+        .payment-method-check {
+            color: #0d6efd;
+            font-weight: bold;
+        }
+        .payment-method-transfer {
+            color: #6f42c1;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 p-0 sidebar">
+                <div class="p-3">
+                    <h4 class="text-center mb-4">Mauricio Paint and Dry Wall</h4>
+                    <hr>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a href="/dashboard">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/timesheets">
+                                <i class="bi bi-calendar-week"></i> Timesheets
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/payroll" class="active">
+                                <i class="bi bi-cash-stack"></i> Payroll
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/projects">
+                                <i class="bi bi-briefcase"></i> Projects
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/invoices">
+                                <i class="bi bi-receipt"></i> Invoices
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>Payroll Management</h1>
+                    <div>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPayrollModal">
+                            <i class="bi bi-plus-circle"></i> Create Payroll Entry
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm ms-2" id="logoutBtn">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Payroll List -->
+                <div class="payroll-container">
+                    <h3 class="mb-3">Payroll Records</h3>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Period</th>
+                                <th>Hours</th>
+                                <th>Payment Method</th>
+                                <th>Deductions</th>
+                                <th>Amount Paid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payroll in payrolls %}
+                            <tr>
+                                <td>{{ payroll.employee.name }}</td>
+                                <td>{{ payroll.period_start.strftime('%m/%d/%Y') }} - {{ payroll.period_end.strftime('%m/%d/%Y') }}</td>
+                                <td>{{ payroll.total_hours }}</td>
+                                <td>
+                                    <span class="payment-method-{{ payroll.payment_method.lower() }}">
+                                        {{ payroll.payment_method }}
+                                    </span>
+                                </td>
+                                <td>${{ payroll.deductions }}</td>
+                                <td>${{ payroll.amount_paid }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">No payroll records found. Create your first payroll entry!</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Payroll Modal -->
+    <div class="modal fade" id="addPayrollModal" tabindex="-1" aria-labelledby="addPayrollModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPayrollModalLabel">Create Payroll Entry</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addPayrollForm" action="/payroll" method="post">
+                        <div class="mb-3">
+                            <label for="employee_id" class="form-label">Employee</label>
+                            <select class="form-select" id="employee_id" name="employee_id" required>
+                                <option value="" selected disabled>Select an employee</option>
+                                {% for employee in employees %}
+                                <option value="{{ employee.id }}" data-rate="{{ employee.hourly_rate }}">{{ employee.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="period_start" class="form-label">Period Start</label>
+                                <input type="date" class="form-control" id="period_start" name="period_start" required>
+                            </div>
+                            <div class="col">
+                                <label for="period_end" class="form-label">Period End</label>
+                                <input type="date" class="form-control" id="period_end" name="period_end" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="total_hours" class="form-label">Total Hours</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="total_hours" name="total_hours" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="payment_method" class="form-label">Payment Method</label>
+                            <select class="form-select" id="payment_method" name="payment_method" required>
+                                <option value="Cash">Cash</option>
+                                <option value="Check">Check</option>
+                                <option value="Transfer">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="deductions" class="form-label">Deductions ($)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="deductions" name="deductions" value="0.00">
+                        </div>
+                        <div class="mb-3">
+                            <label for="amount_paid" class="form-label">Amount Paid ($)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="amount_paid" name="amount_paid" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="addPayrollForm" class="btn btn-primary">Create Payroll</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        });
+        
+        // Set default dates for payroll period
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/';
+                return;
+            }
+            
+            // Set default dates (last week)
+            const today = new Date();
+            const lastFriday = new Date(today);
+            lastFriday.setDate(today.getDate() - ((today.getDay() + 2) % 7));
+            
+            const periodStart = new Date(lastFriday);
+            periodStart.setDate(lastFriday.getDate() - 4); // Monday
+            
+            document.getElementById('period_start').value = periodStart.toISOString().split('T')[0];
+            document.getElementById('period_end').value = lastFriday.toISOString().split('T')[0];
+            
+            // Calculate amount based on hours and rate
+            const calculateAmount = () => {
+                const employeeSelect = document.getElementById('employee_id');
+                const selectedOption = employeeSelect.options[employeeSelect.selectedIndex];
+                if (!selectedOption || selectedOption.value === "") return;
+                
+                const hourlyRate = parseFloat(selectedOption.getAttribute('data-rate'));
+                const hours = parseFloat(document.getElementById('total_hours').value) || 0;
+                const deductions = parseFloat(document.getElementById('deductions').value) || 0;
+                
+                if (hourlyRate && hours) {
+                    const grossPay = hourlyRate * hours;
+                    const netPay = grossPay - deductions;
+                    document.getElementById('amount_paid').value = netPay.toFixed(2);
+                }
+            };
+            
+            document.getElementById('employee_id').addEventListener('change', calculateAmount);
+            document.getElementById('total_hours').addEventListener('input', calculateAmount);
+            document.getElementById('deductions').addEventListener('input', calculateAmount);
+            
+            // Add authorization header to form submissions
+            document.getElementById('addPayrollForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                
+                try {
+                    const response = await fetch('/payroll', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Error creating payroll entry. Please try again.');
+                    }
+                } catch (error) {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

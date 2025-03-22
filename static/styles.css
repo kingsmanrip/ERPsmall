@@ -1,0 +1,154 @@
+/* Main Styles for Mauricio Paint and Dry Wall Financial System */
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2c3e50;
+  --accent-color: #e74c3c;
+  --light-gray: #f8f9fa;
+  --dark-gray: #343a40;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--light-gray);
+  color: var(--dark-gray);
+}
+
+.navbar {
+  background-color: var(--secondary-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  color: white !important;
+}
+
+.sidebar {
+  background-color: white;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  min-height: calc(100vh - 56px);
+  padding-top: 20px;
+}
+
+.sidebar .nav-link {
+  color: var(--dark-gray);
+  border-radius: 0;
+  padding: 10px 20px;
+  margin-bottom: 5px;
+}
+
+.sidebar .nav-link:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+  color: var(--primary-color);
+}
+
+.sidebar .nav-link.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.main-content {
+  padding: 30px;
+}
+
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card-header {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 10px 10px 0 0 !important;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+.table {
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table thead th {
+  background-color: var(--secondary-color);
+  color: white;
+  border-bottom: none;
+}
+
+.dashboard-stats .card {
+  text-align: center;
+  padding: 20px;
+}
+
+.dashboard-stats .card-title {
+  font-size: 1rem;
+  color: var(--dark-gray);
+}
+
+.dashboard-stats .card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.login-container {
+  max-width: 400px;
+  margin: 100px auto;
+}
+
+.login-card {
+  padding: 30px;
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-logo h1 {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.alert {
+  border-radius: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .main-content {
+    padding: 15px;
+  }
+}
